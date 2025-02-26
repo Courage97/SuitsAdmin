@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Invoice>
+  <InvoiceNumber>INV-1001</InvoiceNumber>
+  <CustomerName>John Doe</CustomerName>
+  <TotalAmount>150.00</TotalAmount>
+  <Currency>USD</Currency>
+  <Status>pending</Status>
+  <CreatedAt>2025-02-22</CreatedAt>
+  <TaxInformation>
+    <VAT>16%</VAT>
+    <TaxAmount>24.00</TaxAmount>
+  </TaxInformation>
+</Invoice>

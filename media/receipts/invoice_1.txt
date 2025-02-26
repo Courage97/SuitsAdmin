@@ -1,0 +1,9 @@
+========== SUITADMIN SYSTEM ==========
+Invoice No: INV-1001
+Customer: John Doe
+Date: 2025-02-26
+Total Amount: 200.50 USD
+=====================================
+Thank you for your purchase!
+Visit Again!
+
