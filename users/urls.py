@@ -13,5 +13,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     
     # users list endpoint
-     path("users/", UserListView.as_view(), name="user-list"), 
+     path("users/", UserListView.as_view(), name="user-list"),
+     
+
 ]

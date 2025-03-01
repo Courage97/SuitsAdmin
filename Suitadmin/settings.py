@@ -36,7 +36,10 @@ CELERY_BEAT_SCHEDULE = {
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-tkt2908tae!^^m-kxp0nwn_s*-s1na*r$+@rq(&iz@u6$04(9m')
+SECRET_KEY = env('SECRET_KEY', default='your-correct-secret-key')
+
+# Debug log for the secret key
+print("Loaded SECRET_KEY:", SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
@@ -45,8 +48,7 @@ ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = "users.User"
 
-CORS_ALLOW_ALL_ORIGINS = True 
-
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 INSTALLED_APPS = [
@@ -61,6 +63,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "django_celery_beat",
+    'rest_framework_simplejwt.token_blacklist',  # Ensure token blacklisting works
     # Custom apps
     "users",
     "billing",
@@ -119,6 +122,25 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# JWT Configuration
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+ 
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
