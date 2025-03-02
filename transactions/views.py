@@ -86,9 +86,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         - Admins can view, update, or delete invoices.
         """
         if self.action == "create":
-            permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+            permission_classes = [permissions.IsAuthenticated]
         elif self.action in ["list", "retrieve"]:
-            permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+            permission_classes = [permissions.IsAuthenticated]
         elif self.action in ["update", "partial_update"]:
             permission_classes = [permissions.IsAuthenticated, IsAdminUser]  # ✅ Only Admins Can Modify Invoices
         else:
@@ -103,14 +103,14 @@ class ExchangeRateViewSet(viewsets.ModelViewSet):
     """
     queryset = ExchangeRate.objects.all()
     serializer_class = ExchangeRateSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class FetchExchangeRateView(APIView):
     """
     Fetch and update exchange rates using an external API.
     """
-    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         success = fetch_live_exchange_rates()
