@@ -1,12 +1,12 @@
 from django.db import models
 from django.conf import settings
-from orders.models import Order
+from sale.models import Sale
 
 class ProformaInvoice(models.Model):
     """
     Stores estimated invoices before finalization.
     """
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="proforma_invoices")
+    order = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name="proforma_invoices")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     currency = models.CharField(
         max_length=3,

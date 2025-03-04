@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.conf import settings
-from orders.models import Order
+from sale.models import Sale
 
 class Table(models.Model):
     STATUS_CHOICES = [
@@ -31,7 +31,7 @@ class BillSplit(models.Model):
     """
     Stores details of bill splits among customers.
     """
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="bill_splits")
+    order = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name="bill_splits")
     customer_name = models.CharField(max_length=255)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(
@@ -43,14 +43,14 @@ class BillSplit(models.Model):
     def __str__(self):
         return f"{self.customer_name} paid {self.amount_paid} for Order {self.order.id}"
 
-class OrderItem(models.Model):
+class SaleItem(models.Model):
     CATEGORY_CHOICES = [
         ("food", "Food"),
         ("drink", "Drink"),
     ]
     
     order = models.ForeignKey(
-        Order, 
+        Sale, 
         on_delete=models.CASCADE, 
         related_name="order_items"  # Changed from default
     )

@@ -7,7 +7,7 @@ from django.db.models import Sum, Count
 from django.utils.timezone import now
 from datetime import timedelta
 from django.db.models.functions import TruncDate
-from orders.models import  Order, OrderItem
+from sale.models import  Sale, SaleItem
 from .models import SalesReport
 from django.core.mail import EmailMessage
 from django.core.exceptions import ObjectDoesNotExist
@@ -33,14 +33,14 @@ def generate_monthly_sales_report():
     first_day_of_month = today.replace(day=1)
 
     # Get all completed orders for the current month
-    orders = Order.objects.filter(status="completed", created_at__date__gte=first_day_of_month)
+    orders = Sale.objects.filter(status="completed", created_at__date__gte=first_day_of_month)
 
     total_orders = orders.count()
     total_revenue = orders.aggregate(Sum("total_amount"))["total_amount__sum"] or 0
 
     # Get best-selling products
     best_selling_products = (
-        OrderItem.objects
+        SaleItem.objects
         .filter(order__status="completed", order__created_at__date__gte=first_day_of_month)
         .values("product__name")
         .annotate(total_sold=Sum("quantity"))
@@ -73,13 +73,13 @@ def generate_sales_report_pdf():
     first_day_of_month = today.replace(day=1)
 
     # Get sales data
-    orders = Order.objects.filter(status="completed", created_at__date__gte=first_day_of_month)
+    orders = Sale.objects.filter(status="completed", created_at__date__gte=first_day_of_month)
     total_orders = orders.count()
     total_revenue = orders.aggregate(Sum("total_amount"))["total_amount__sum"] or 0
 
     # Get best-selling products
     best_selling_products = (
-        OrderItem.objects
+        SaleItem.objects
         .filter(order__status="completed", order__created_at__date__gte=first_day_of_month)
         .values("product__name")
         .annotate(total_sold=Sum("quantity"))
@@ -129,7 +129,7 @@ def generate_invoice(order_id):
     Generate a PDF invoice for a given order and save it to the media folder.
     """
     try:
-        order = Order.objects.get(id=order_id)
+        order = Sale.objects.get(id=order_id)
     except ObjectDoesNotExist:
         return None  # Return None instead of crashing
 
@@ -163,7 +163,7 @@ def send_invoice_email(order_id):
     """
     Send an invoice email with a PDF attachment to the customer.
     """
-    order = Order.objects.get(id=order_id)
+    order = Sale.objects.get(id=order_id)
     
     if not order:
         print(f"❌ Order {order_id} not found.")
@@ -220,13 +220,13 @@ def generate_sales_report():
         print("✅ Report exists:", created)  # ✅ Debugging
 
         # ✅ Get sales data
-        orders = Order.objects.filter(status="completed", created_at__date__gte=first_day_of_month)
+        orders = Sale.objects.filter(status="completed", created_at__date__gte=first_day_of_month)
         total_orders = orders.count()
         total_revenue = orders.aggregate(Sum("total_amount"))["total_amount__sum"] or 0
 
         # ✅ Get best-selling products
         best_selling_products = (
-            OrderItem.objects
+            SaleItem.objects
             .filter(order__status="completed", order__created_at__date__gte=first_day_of_month)
             .values("product__name")
             .annotate(total_sold=Sum("quantity"))

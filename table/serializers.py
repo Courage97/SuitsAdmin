@@ -12,14 +12,15 @@ class ReservationSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 from rest_framework import serializers
-from .models import BillSplit, OrderItem
+from .models import BillSplit
+from sale.models import SaleItem
 
 class BillSplitSerializer(serializers.ModelSerializer):
     class Meta:
         model = BillSplit
         fields = ["id", "customer_name", "amount_paid", "payment_method", "created_at"]
 
-class OrderItemSerializer(serializers.ModelSerializer):
+class SaleItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OrderItem
+        model = SaleItem
         fields = "__all__"

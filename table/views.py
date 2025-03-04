@@ -2,9 +2,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Table, Reservation, BillSplit, OrderItem
-from .serializers import TableSerializer, ReservationSerializer, BillSplitSerializer, OrderItemSerializer
-from orders.models import Order
+from .models import Table, Reservation, BillSplit
+from sale.models import SaleItem
+from .serializers import TableSerializer, ReservationSerializer, BillSplitSerializer
+from sale.serializers import SaleItemSerializer
+from sale.models import Sale
 from decimal import Decimal
 
 # Table Views
@@ -40,7 +42,7 @@ class BillSplitCreateView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         order_id = self.kwargs.get("order_id")
-        order = get_object_or_404(Order, id=order_id)
+        order = get_object_or_404(Sale, id=order_id)
 
         total_paid = sum(BillSplit.objects.filter(order=order).values_list("amount_paid", flat=True))
         amount_requested = Decimal(str(request.data.get("amount_paid", 0)))  
@@ -61,22 +63,22 @@ class KitchenOrderListView(generics.ListAPIView):
     """
     Fetches all orders assigned to the kitchen.
     """
-    serializer_class = OrderItemSerializer
+    serializer_class = SaleItemSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return OrderItem.objects.filter(routed_to="kitchen")
+        return SaleItem.objects.filter(routed_to="kitchen")
 
 
 class BarOrderListView(generics.ListAPIView):
     """
     Fetches all orders assigned to the bar.
     """
-    serializer_class = OrderItemSerializer
+    serializer_class = SaleItemSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return OrderItem.objects.filter(routed_to="bar")
+        return SaleItem.objects.filter(routed_to="bar")
 
 
 # Save Method for OrderItem Model (Place this in the OrderItem model)
