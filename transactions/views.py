@@ -90,7 +90,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         elif self.action in ["list", "retrieve"]:
             permission_classes = [permissions.IsAuthenticated]
         elif self.action in ["update", "partial_update"]:
-            permission_classes = [permissions.IsAuthenticated, IsAdminUser]  # ✅ Only Admins Can Modify Invoices
+            permission_classes = [permissions.IsAuthenticated]  # ✅ Only Admins Can Modify Invoices
         else:
             permission_classes = [IsAdminUser]  # ✅ Restrict Deletions
         return [perm() for perm in permission_classes]
@@ -124,7 +124,7 @@ class GenerateSeniatInvoiceView(APIView):
     """
     API view to generate a SENIAT-compliant XML invoice.
     """
-    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, invoice_id, *args, **kwargs):
         xml_path = generate_seniat_invoice_xml(invoice_id)
@@ -144,7 +144,7 @@ class TransmitInvoiceToSeniatView(APIView):
     """
     API endpoint to transmit an invoice to SENIAT.
     """
-    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, invoice_id, *args, **kwargs):
         try:
@@ -176,15 +176,15 @@ class PrintInvoiceView(APIView):
         return Response({"error": result["error"]}, status=400)
     
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, IsAdminUser])
+@permission_classes([IsAuthenticated])
 def generate_order_invoice(request, order_id):
     """
-    Generate and return an invoice for a specific order.
+    Generate and return an invoice as a downloadable PDF file.
     """
-    invoice_url = generate_invoice(order_id)
+    invoice_path = generate_invoice(order_id)
 
-    if invoice_url is None:
-        return Response({"error": "Order not found"}, status=404)  # ✅ Prevent crashing
+    if invoice_path is None or not os.path.exists(invoice_path):
+        return Response({"error": "Order not found or invoice generation failed"}, status=404)
 
-    return Response({"invoice_url": request.build_absolute_uri(invoice_url)})
-
+    # Serve the PDF file as a downloadable response
+    return FileResponse(open(invoice_path, "rb"), content_type="application/pdf", as_attachment=True, filename=f"invoice_{order_id}.pdf")
