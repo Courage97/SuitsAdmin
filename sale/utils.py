@@ -10,12 +10,7 @@ def generate_invoice(sale_id):
     """
     Generate a PDF invoice for a given sale and save it to the media folder.
     """
-    try:
-        sale = Sale.objects.get(id=sale_id)
-    except Sale.DoesNotExist:
-        print(f"❌ Sale {sale_id} not found.")
-        return None
-
+    sale = Sale.objects.get(id=sale_id)
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
     pdf.setTitle(f"Invoice_{sale.id}")
@@ -60,22 +55,19 @@ def generate_invoice(sale_id):
     buffer.seek(0)
 
     # Save invoice file
-    invoice_dir = os.path.join(settings.MEDIA_ROOT, "invoices")
-    os.makedirs(invoice_dir, exist_ok=True)  # ✅ Ensure directory exists
-
     invoice_filename = f"invoice_{sale.id}.pdf"
-    invoice_path = os.path.join(invoice_dir, invoice_filename)
+    invoice_path = os.path.join(settings.MEDIA_ROOT, "invoices", invoice_filename)
+
+    # Ensure the media path is correct
+    if not os.path.exists(os.path.dirname(invoice_path)):
+        os.makedirs(os.path.dirname(invoice_path))
 
     with open(invoice_path, "wb") as f:
         f.write(buffer.getvalue())
 
-    # Double-check the file actually exists
-    if not os.path.exists(invoice_path):
-        print(f"❌ Failed to save invoice file: {invoice_path}")
-        return None
+    # Return the correct media URL
+    return f"/invoices/{invoice_filename}"
 
-    print(f"✅ Invoice generated: {invoice_path}")
-    return f"{settings.MEDIA_URL}invoices/{invoice_filename}"
 
 def send_invoice_email(sale_id):
     """

@@ -28,28 +28,30 @@ class SaleViewSet(viewsets.ModelViewSet):
             sale.update_total_amount()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['get'])
     def generate_invoice(self, request, pk=None):
         """
         Generate an invoice for a completed sale.
         """
-        sale = get_object_or_404(Sale, pk=pk)
-
-        if sale.status != "completed":
-            return Response({"error": "Invoice can only be generated for completed sales."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if an invoice already exists
+        sale = self.get_object()
+        
+        # Make sure the sale is completed before generating an invoice
+        if sale.status != 'completed':
+            return Response({"error": "Invoice can only be generated for completed sales."}, status=400)
+        
+        # Try to generate or fetch the invoice
         invoice, created = Invoice.objects.get_or_create(sale=sale)
-
         if created or not invoice.pdf_file:
             try:
                 invoice_url = generate_invoice(sale.id)
                 invoice.pdf_file = invoice_url
                 invoice.save()
             except Exception as e:
-                return Response({"error": f"Failed to generate invoice: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"error": f"Failed to generate invoice: {str(e)}"}, status=500)
+        
+        invoice_serializer = InvoiceSerializer(invoice)
+        return Response(invoice_serializer.data, status=200)
 
-        return Response(InvoiceSerializer(invoice).data, status=status.HTTP_200_OK)
 
 class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
     """

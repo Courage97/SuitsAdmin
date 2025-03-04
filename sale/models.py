@@ -4,6 +4,8 @@ from django.conf import settings
 from inventory.models import Product
 from django.db.models.functions import Coalesce
 from django.utils.timezone import now
+from django.utils.crypto import get_random_string
+
 
 
 class Sale(models.Model):
@@ -118,11 +120,14 @@ class ExchangeRate(models.Model):
 
 class Invoice(models.Model):
     sale = models.OneToOneField(Sale, on_delete=models.CASCADE)
-    invoice_number = models.CharField(max_length=20, unique=True)
+    invoice_number = models.CharField(max_length=20, unique=True, blank=True)
     pdf_file = models.FileField(upload_to="invoices/")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.invoice_number:
+            self.invoice_number = f"INV-{get_random_string(8).upper()}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Invoice {self.invoice_number} for Sale {self.sale.id}"
-
-# This version should fix the sales report issue and properly link SaleItem filtering! 🚀
