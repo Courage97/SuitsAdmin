@@ -5,6 +5,7 @@ from inventory.models import Product
 from django.db.models.functions import Coalesce
 from django.utils.timezone import now
 from django.utils.crypto import get_random_string
+from table.models import Table
 
 
 
@@ -16,13 +17,14 @@ class Sale(models.Model):
     ]
 
     customer_name = models.CharField(max_length=255)
+    table = models.ForeignKey("table.Table", on_delete=models.SET_NULL, null=True, blank=True, related_name="sales")  # ✅ Add this!
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     currency = models.CharField(max_length=3, default="USD")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True
-    )
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    table = models.ForeignKey(Table, on_delete=models.SET_NULL, null=True, blank=True, related_name="sales")
+
 
     def update_total_amount(self):
         """
