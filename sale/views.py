@@ -5,8 +5,10 @@ from django.db import transaction
 from .models import Sale, SaleItem, Invoice
 from .serializers import SaleSerializer, InvoiceSerializer
 from .utils import generate_invoice
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, permissions
+from .report import generate_sales_report, export_sales_report_to_pdf
 
 
 class SaleViewSet(viewsets.ModelViewSet):
@@ -65,15 +67,34 @@ class SalesReportViewSet(viewsets.ViewSet):
     """
     View sales reports.
     """
-    permission_classes = [permissions.IsAuthenticated]  # ✅ Restrict reports
+    permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False, methods=['get'])
     def monthly_report(self, request):
         """
-        Generate a monthly sales report.
+        Generate a comprehensive sales report with optional date filtering.
         """
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+
         try:
-            report_data = Sale.objects.get_monthly_report()
+            report_data = generate_sales_report(start_date, end_date)
             return Response(report_data, status=status.HTTP_200_OK)
-        except AttributeError:
-            return Response({"error": "Monthly report generation failed. Check your model."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=['get'])
+    def export_pdf(self, request):
+        """
+        Generate and return a PDF version of the sales report.
+        """
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+
+        try:
+            pdf_buffer = export_sales_report_to_pdf(start_date, end_date)
+            response = FileResponse(pdf_buffer, content_type="application/pdf")
+            response["Content-Disposition"] = 'attachment; filename="sales_report.pdf"'
+            return response
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

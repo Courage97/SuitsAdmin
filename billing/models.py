@@ -9,7 +9,7 @@ class ProformaInvoice(models.Model):
     order = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name="proforma_invoices")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     currency = models.CharField(
-        max_length=3,
+        max_length=3, 
         choices=[("USD", "US Dollar"), ("Bs", "Bolívares"), ("EUR", "Euro")],
         default="USD"
     )
